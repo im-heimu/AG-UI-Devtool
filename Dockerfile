@@ -16,6 +16,9 @@ RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000 \
     npm ci --no-audit --no-fund
 
 COPY --chown=node:node . .
+# Mount point of the build cache volume. Created here, so a new volume
+# is owned by node instead of root.
+RUN mkdir .next
 
 EXPOSE 3000
 CMD ["node_modules/.bin/next", "dev", "--hostname", "0.0.0.0"]

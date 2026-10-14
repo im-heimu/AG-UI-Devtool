@@ -17,6 +17,10 @@ services:
       - host.docker.internal:host-gateway
     ports:
       - "127.0.0.1:3000:3000"
+    volumes:
+      # Turbopack's build cache. It outlives the container, so only the
+      # first start compiles everything; `down -v` drops it.
+      - next-cache:/app/.next
     develop:
       watch:
         - action: sync
@@ -27,3 +31,8 @@ services:
           target: /app/lib
         - action: rebuild
           path: package-lock.json
+        - action: rebuild
+          path: next.config.ts
+
+volumes:
+  next-cache:
