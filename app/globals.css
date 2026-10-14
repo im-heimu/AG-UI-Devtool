@@ -4,8 +4,81 @@ body {
   margin: 0;
 }
 
-.chat {
+.layout {
+  display: flex;
+  flex-direction: column;
   height: 100dvh;
   max-width: 960px;
   margin: 0 auto;
+}
+
+.chat {
+  flex: 1;
+  min-height: 0;
+}
+
+.connection {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  font: 14px system-ui, sans-serif;
+}
+
+.connection summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.connection input,
+.connection button {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.connection button {
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.field span,
+.label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.field span {
+  margin-top: 0;
+}
+
+.header-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.header-row button {
+  margin-top: 0;
+}
+
+.warning {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #b45309;
+  font-size: 12px;
+}
+
+.hint {
+  margin: 8px 0 0;
+  color: #737373;
+  font-size: 12px;
 }

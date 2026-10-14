@@ -18,4 +18,4 @@ RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000 \
 COPY --chown=node:node . .
 
 EXPOSE 3000
-CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+CMD ["node_modules/.bin/next", "dev", "--hostname", "0.0.0.0"]

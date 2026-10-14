@@ -3,6 +3,7 @@
 A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
 [CopilotKit](https://docs.copilotkit.ai). It shows:
 
+- the agent URL and request headers, editable in the page;
 - the answer as a frontend shows it, including the streaming;
 - every tool call, with its arguments, status and result;
 - the CopilotKit Inspector (button in the top right corner):
@@ -11,20 +12,17 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
   - **Agent**: the agent's state and messages.
 
 ```
-browser :3000 -> Next.js page + Inspector
+browser :3000 -> page: connection panel + chat + Inspector
                  /api/copilotkit (CopilotRuntime)
-                   -> HttpAgent -> AGENT_URL + headers from .env
+                   -> HttpAgent -> agent URL + headers from the page
 ```
 
 The runtime calls the agent from the server, so the agent needs no
-CORS setup. This is a development tool: it sends whatever identity
-headers `.env` holds. Never expose it beyond localhost.
+CORS setup. The server calls whatever URL the page gives it and
+passes on whatever identity headers the page holds, so it listens on
+127.0.0.1 only. Never expose it beyond localhost.
 
 ## Run
-
-```sh
-cp .env.example .env    # then set AGENT_URL and the headers
-```
 
 With Node.js 24:
 
@@ -39,23 +37,37 @@ Or with Docker:
 docker compose up --build --watch
 ```
 
+Optionally copy `.env.example` to `.env` to set the default agent URL
+and turn off usage telemetry.
+
+## Connection
+
+The panel above the chat sets where runs go and what they carry. Both
+apply from the next run, so the agent, user or token can change
+mid-conversation.
+
+- **Agent URL**: the AG-UI endpoint, e.g. `http://localhost:8000/chat`.
+  Empty means `AGENT_URL` of the devtool server. In Docker the server
+  runs in a container: reach an agent on the host through
+  `host.docker.internal`, not `localhost`.
+- **Headers**: the CopilotKit runtime forwards only `Authorization`
+  and `X-*` headers, and drops proxy ones such as `X-Request-ID` and
+  `X-Forwarded-*`. The panel flags names it will not forward.
+  `Authorization` values are masked.
+
+Both are kept in sessionStorage: a reload keeps them, closing the tab
+forgets them.
+
+For example, a local gan with `AUTH__TRUST_IDENTITY_HEADERS=true`
+identifies the user by `X-CURRENT-USER-ID: <uuid>`. A gan that
+verifies tokens needs `Authorization: Bearer <token>` instead.
+
 ## Settings
 
 | Variable | Purpose |
 | --- | --- |
-| `AGENT_URL` | AG-UI endpoint, e.g. `http://localhost:8000/chat` |
-| `AGENT_HEADERS` | JSON object of headers sent with every run |
-| `AGENT_TOKEN` | Bearer token, sent as `Authorization` |
+| `AGENT_URL` | Default agent URL, used when the page leaves it empty |
 | `DOCKER_AGENT_URL` | Docker only, defaults to `http://host.docker.internal:8000/chat` |
-
-For example, a local gan with `AUTH__TRUST_IDENTITY_HEADERS=true`
-identifies the user by a header:
-
-```sh
-AGENT_HEADERS='{"X-CURRENT-USER-ID": "11111111-1111-4111-8111-111111111111"}'
-```
-
-A gan that verifies tokens needs `AGENT_TOKEN` instead.
 
 ## Notes
 

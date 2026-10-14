@@ -4,33 +4,35 @@ import {
   createCopilotRuntimeHandler,
 } from "@copilotkit/runtime/v2";
 
-import { agentHeaders, agentUrl } from "@/lib/agent-headers";
-
-type Handler = (request: Request) => Promise<Response>;
-
-let handler: Handler | undefined;
+import { agentUrl } from "@/lib/agent-url";
 
 /**
- * Build the runtime on the first request rather than on import, so
- * `next build` works without the agent settings.
+ * One agent, created per request for the URL the page sends, else
+ * AGENT_URL. The runtime forwards the page's Authorization and X-*
+ * headers to it.
  */
-function runtimeHandler(): Handler {
-  handler ??= createCopilotRuntimeHandler({
-    runtime: new CopilotRuntime({
-      agents: {
-        default: new HttpAgent({
-          url: agentUrl(),
-          headers: agentHeaders(),
-        }),
-      },
+const handler = createCopilotRuntimeHandler({
+  runtime: new CopilotRuntime({
+    agents: ({ request }) => ({
+      // Discovery only lists the agent, so it needs no URL.
+      default: new HttpAgent({ url: agentUrl(request) ?? "" }),
     }),
-    basePath: "/api/copilotkit",
-  });
-  return handler;
-}
+  }),
+  basePath: "/api/copilotkit",
+});
 
-function handle(request: Request): Promise<Response> {
-  return runtimeHandler()(request);
+async function handle(request: Request): Promise<Response> {
+  if (request.method !== "GET" && agentUrl(request) === undefined) {
+    return Response.json(
+      {
+        error:
+          "Set an http(s) agent URL in the page, or AGENT_URL on the " +
+          "devtool server.",
+      },
+      { status: 400 },
+    );
+  }
+  return handler(request);
 }
 
 export const GET = handle;
