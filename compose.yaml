@@ -1,0 +1,29 @@
+# docker compose up --build --watch
+# Open http://localhost:3000. The agent runs elsewhere: on the host or
+# in its own compose stack with a published port.
+name: ag-ui-devtool
+
+services:
+  devtool:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # localhost inside the container is the container itself.
+      AGENT_URL: ${DOCKER_AGENT_URL:-http://host.docker.internal:8000/chat}
+    extra_hosts:
+      # Docker Desktop resolves it already; Linux needs the mapping.
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+        - action: sync
+          path: ./lib
+          target: /app/lib
+        - action: rebuild
+          path: package-lock.json

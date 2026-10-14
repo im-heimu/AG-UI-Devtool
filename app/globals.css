@@ -1,0 +1,11 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.chat {
+  height: 100dvh;
+  max-width: 960px;
+  margin: 0 auto;
+}

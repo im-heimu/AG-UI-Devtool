@@ -1,0 +1,9 @@
+# Allowlist: only what the image needs; .env never enters the build.
+*
+!package.json
+!package-lock.json
+!.npmrc
+!next.config.ts
+!tsconfig.json
+!app/
+!lib/
