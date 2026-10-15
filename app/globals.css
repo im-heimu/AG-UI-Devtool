@@ -82,3 +82,24 @@ body {
   color: #737373;
   font-size: 12px;
 }
+
+.upload-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 16px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font: 14px system-ui, sans-serif;
+}
+
+.upload-error button {
+  font: inherit;
+  padding: 2px 8px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}

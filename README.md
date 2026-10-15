@@ -5,6 +5,9 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
 
 - the agent URL and request headers, editable in the page;
 - the answer as a frontend shows it, including the streaming;
+- file attachments (the + button, drag and drop or paste), sent to the
+  agent inline as base64 image, audio, video or document parts of the
+  user message, up to 20 MB each;
 - every tool call, with its arguments, status and result;
 - the CopilotKit Inspector (button in the top right corner):
   - **AG-UI Events**: every raw event of a run (`RUN_STARTED`,
