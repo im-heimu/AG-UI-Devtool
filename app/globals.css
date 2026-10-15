@@ -103,3 +103,33 @@ body {
   background: #fff;
   cursor: pointer;
 }
+
+.capabilities {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+}
+
+.capabilities div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.capabilities dt {
+  font-weight: 500;
+}
+
+.capabilities dd {
+  margin: 0;
+  color: #404040;
+}
+
+.custom {
+  margin: 4px 0 0;
+  padding: 8px;
+  overflow-x: auto;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-size: 12px;
+}

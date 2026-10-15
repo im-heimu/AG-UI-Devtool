@@ -13,3 +13,18 @@ export function isForwarded(name: string): boolean {
   const lower = name.trim().toLowerCase();
   return lower === "authorization" || lower.startsWith("x-");
 }
+
+/**
+ * The headers of a page request to pass on to the agent, as the
+ * runtime does for a run. X-Forwarded-* describe the hop from the
+ * browser to this server, not to the agent.
+ */
+export function forwardedHeaders(headers: Headers): Record<string, string> {
+  const forwarded: Record<string, string> = {};
+  headers.forEach((value, name) => {
+    if (isForwarded(name) && !name.startsWith("x-forwarded-")) {
+      forwarded[name] = value;
+    }
+  });
+  return forwarded;
+}

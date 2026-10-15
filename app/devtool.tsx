@@ -8,14 +8,18 @@ import {
   useDefaultRenderTool,
 } from "@copilotkit/react-core/v2";
 
+import { type AttachmentPolicy, attachmentPolicy } from "@/lib/capabilities";
 import { useConnection } from "@/lib/connection";
+import { useAgentCapabilities } from "@/lib/use-agent-capabilities";
 
+import { CapabilitiesPanel } from "./capabilities-panel";
 import { ConnectionPanel } from "./connection-panel";
 
 type Props = { defaultAgentUrl: string | undefined };
 
 export function Devtool({ defaultAgentUrl }: Props) {
   const { agentUrl, setAgentUrl, rows, setRows, headers } = useConnection();
+  const capabilities = useAgentCapabilities(headers);
 
   // Every request to the runtime carries the agent URL and headers;
   // the Inspector is on in dev builds.
@@ -29,13 +33,20 @@ export function Devtool({ defaultAgentUrl }: Props) {
           rows={rows}
           onRowsChange={setRows}
         />
-        <Chat />
+        <CapabilitiesPanel state={capabilities} />
+        <Chat
+          attachments={attachmentPolicy(
+            capabilities.status === "ready"
+              ? capabilities.capabilities
+              : undefined,
+          )}
+        />
       </main>
     </CopilotKitProvider>
   );
 }
 
-function Chat() {
+function Chat({ attachments }: { attachments: AttachmentPolicy }) {
   // Show every tool call the agent makes in the chat, with its
   // arguments, status and result.
   useDefaultRenderTool();
@@ -54,10 +65,10 @@ function Chat() {
       )}
       <div className="chat">
         {/* Files go to the agent inline, as base64 data parts of the
-            user message: images, audio, video and documents. */}
+            user message, limited to what the agent declares it reads. */}
         <CopilotChat
           attachments={{
-            enabled: true,
+            ...attachments,
             onUploadFailed: (error) =>
               setUploadError(`${error.file.name}: ${error.message}`),
           }}

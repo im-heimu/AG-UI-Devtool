@@ -4,10 +4,12 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
 [CopilotKit](https://docs.copilotkit.ai). It shows:
 
 - the agent URL and request headers, editable in the page;
+- what the agent declares it can do, from its AG-UI capabilities;
 - the answer as a frontend shows it, including the streaming;
 - file attachments (the + button, drag and drop or paste), sent to the
   agent inline as base64 image, audio, video or document parts of the
-  user message, up to 20 MB each;
+  user message, up to 20 MB each, of the kinds the agent declares it
+  reads;
 - every tool call, with its arguments, status and result;
 - the CopilotKit Inspector (button in the top right corner):
   - **AG-UI Events**: every raw event of a run (`RUN_STARTED`,
@@ -15,9 +17,11 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
   - **Agent**: the agent's state and messages.
 
 ```
-browser :3000 -> page: connection panel + chat + Inspector
+browser :3000 -> page: connection and capabilities panels + chat + Inspector
                  /api/copilotkit (CopilotRuntime)
                    -> HttpAgent -> agent URL + headers from the page
+                 /api/capabilities
+                   -> GET <agent URL>/capabilities + the same headers
 ```
 
 The runtime calls the agent from the server, so the agent needs no
@@ -64,6 +68,20 @@ forgets them.
 For example, a local gan with `AUTH__TRUST_IDENTITY_HEADERS=true`
 identifies the user by `X-CURRENT-USER-ID: <uuid>`. A gan that
 verifies tokens needs `Authorization: Bearer <token>` instead.
+
+## Capabilities
+
+The panel below the connection shows what the agent declares it can
+do: its name, version and description, transport, tools, state,
+reasoning, multimodal input and output, limits, and any custom
+entries. The devtool server reads them from `<agent URL>/capabilities`
+(e.g. `http://localhost:8000/chat/capabilities`, where ag_ui_adk
+serves them) with the same headers as a run, and asks again whenever
+the agent URL or headers change.
+
+Attachments follow `multimodal.input`: an agent declaring images only
+gets an image picker, one declaring no input gets none. An agent that
+declares no capabilities, or cannot be asked, is offered every file.
 
 ## Settings
 
