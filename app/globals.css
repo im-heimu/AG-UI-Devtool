@@ -133,3 +133,78 @@ body {
   border-radius: 6px;
   font-size: 12px;
 }
+
+.ask {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font: 14px system-ui, sans-serif;
+}
+
+.ask fieldset {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ask legend {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.ask-header {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #404040;
+  font-size: 12px;
+}
+
+.ask-option {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  cursor: pointer;
+}
+
+.ask-own,
+.ask button {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.ask button {
+  cursor: pointer;
+}
+
+.ask-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ask button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.answered div {
+  display: grid;
+  gap: 2px;
+}
+
+.answered dt {
+  color: #737373;
+}
+
+.answered dd {
+  margin: 0;
+  font-weight: 500;
+}

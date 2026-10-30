@@ -12,10 +12,15 @@ import { type AttachmentPolicy, attachmentPolicy } from "@/lib/capabilities";
 import { useConnection } from "@/lib/connection";
 import { useAgentCapabilities } from "@/lib/use-agent-capabilities";
 
+import { useAskUser } from "./ask-user";
 import { CapabilitiesPanel } from "./capabilities-panel";
 import { ConnectionPanel } from "./connection-panel";
 
 type Props = { defaultAgentUrl: string | undefined };
+
+// Sent with every run as forwardedProps: the page shows the questions
+// the agent asks (see ask-user.tsx). An agent without them ignores it.
+const PROPERTIES = { askUser: true };
 
 export function Devtool({ defaultAgentUrl }: Props) {
   const { agentUrl, setAgentUrl, rows, setRows, headers } = useConnection();
@@ -24,7 +29,11 @@ export function Devtool({ defaultAgentUrl }: Props) {
   // Every request to the runtime carries the agent URL and headers;
   // the Inspector is on in dev builds.
   return (
-    <CopilotKitProvider runtimeUrl="/api/copilotkit" headers={headers}>
+    <CopilotKitProvider
+      runtimeUrl="/api/copilotkit"
+      headers={headers}
+      properties={PROPERTIES}
+    >
       <main className="layout">
         <ConnectionPanel
           defaultAgentUrl={defaultAgentUrl}
@@ -50,6 +59,8 @@ function Chat({ attachments }: { attachments: AttachmentPolicy }) {
   // Show every tool call the agent makes in the chat, with its
   // arguments, status and result.
   useDefaultRenderTool();
+  // Questions the agent asks: answered here, the run waits for them.
+  useAskUser();
   // CopilotKit drops a rejected file silently; say why instead.
   const [uploadError, setUploadError] = useState<string | null>(null);
 

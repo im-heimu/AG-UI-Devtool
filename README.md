@@ -11,6 +11,8 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
   user message, up to 20 MB each, of the kinds the agent declares it
   reads;
 - every tool call, with its arguments, status and result;
+- the questions the agent asks, with ready answers and one of your own,
+  answered in the chat (see [Questions](#questions));
 - the CopilotKit Inspector (button in the top right corner):
   - **AG-UI Events**: every raw event of a run (`RUN_STARTED`,
     `TEXT_MESSAGE_*`, `TOOL_CALL_*`, `STATE_SNAPSHOT`, `RUN_ERROR`…);
@@ -83,6 +85,28 @@ Attachments follow `multimodal.input`: an agent declaring images only
 gets an image picker, one declaring no input gets none. An agent that
 declares no capabilities, or cannot be asked, is offered every file.
 
+## Questions
+
+Every run tells the agent that the page shows questions:
+`forwardedProps.askUser` is true. An agent such as gan may then ask
+with its `ask_user` tool: one to four questions, each with ready
+answers. The run pauses on the call, and the chat shows the questions
+as a form: the answers, as radio buttons or checkboxes for a
+multi-select question, and **Other** for an answer of your own.
+**Send** answers the call with a tool message,
+`{"answers": {"<question>": "<answer>"}}` (labels joined with ", "),
+and the run goes on; **Skip** answers `{"skipped": true}`. An answered
+question shows the answer and cannot be sent again.
+
+While a question waits, CopilotKit holds a message typed in the chat
+and sends it after the answer. A client that sends it at once gets the
+question answered `{"skipped": true}` by gan, and the form shows it
+skipped.
+
+The page only shows the agent's own tool: it does not offer one to the
+agent. An agent without questions ignores the flag; gan declares them
+in `custom.askUser` of its capabilities.
+
 ## Settings
 
 | Variable | Purpose |
@@ -95,4 +119,7 @@ declares no capabilities, or cannot be asked, is offered every file.
 - CopilotKit cloud features (Intelligence, Threads, Learning) stay
   off: they need a CopilotKit account and send data to their cloud.
 - `.env.example` turns off Next.js and CopilotKit usage telemetry.
+- The devtool always says it shows questions. To see how an agent
+  answers a client that does not, call it without the flag, e.g. with
+  curl.
 - `npm run typecheck` checks types; `npm run build` checks the build.
