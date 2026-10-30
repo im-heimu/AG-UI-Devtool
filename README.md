@@ -11,14 +11,17 @@ A local chat for any [AG-UI](https://docs.ag-ui.com) agent, built on
   user message, up to 20 MB each, of the kinds the agent declares it
   reads;
 - every tool call, with its arguments, status and result;
+- the [A2UI](https://a2ui.org) buttons and forms the agent sends, ready
+  to click (see [A2UI](#a2ui));
 - the CopilotKit Inspector (button in the top right corner):
   - **AG-UI Events**: every raw event of a run (`RUN_STARTED`,
-    `TEXT_MESSAGE_*`, `TOOL_CALL_*`, `STATE_SNAPSHOT`, `RUN_ERROR`…);
+    `TEXT_MESSAGE_*`, `TOOL_CALL_*`, `ACTIVITY_SNAPSHOT`,
+    `STATE_SNAPSHOT`, `RUN_ERROR`…);
   - **Agent**: the agent's state and messages.
 
 ```
 browser :3000 -> page: connection and capabilities panels + chat + Inspector
-                 /api/copilotkit (CopilotRuntime)
+                 /api/copilotkit (CopilotRuntime + A2UIMiddleware)
                    -> HttpAgent -> agent URL + headers from the page
                  /api/capabilities
                    -> GET <agent URL>/capabilities + the same headers
@@ -83,6 +86,20 @@ Attachments follow `multimodal.input`: an agent declaring images only
 gets an image picker, one declaring no input gets none. An agent that
 declares no capabilities, or cannot be asked, is offered every file.
 
+## A2UI
+
+Every run asks the agent for A2UI surfaces, as a CopilotKit frontend
+does: the runtime's A2UI middleware sets
+`forwardedProps.injectA2UITool`. The agent decides when a surface
+helps. The page draws each `ACTIVITY_SNAPSHOT` of activity type
+`a2ui-surface` with CopilotKit's A2UI renderer and its basic catalog,
+under the answer. A click runs the agent again with
+`forwardedProps.a2uiAction.userAction`: the action's name, surface,
+component and context.
+
+An agent without A2UI ignores the request; gan declares its support
+in `custom.a2ui` of its capabilities.
+
 ## Settings
 
 | Variable | Purpose |
@@ -95,4 +112,7 @@ declares no capabilities, or cannot be asked, is offered every file.
 - CopilotKit cloud features (Intelligence, Threads, Learning) stay
   off: they need a CopilotKit account and send data to their cloud.
 - `.env.example` turns off Next.js and CopilotKit usage telemetry.
+- The devtool always asks for A2UI surfaces. To see how an agent
+  answers a client that does not, call it without the flag, e.g. with
+  curl.
 - `npm run typecheck` checks types; `npm run build` checks the build.
