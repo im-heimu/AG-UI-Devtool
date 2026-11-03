@@ -85,10 +85,21 @@ Attachments follow `multimodal.input`: an agent declaring images only
 gets an image picker, one declaring no input gets none. An agent that
 declares no capabilities, or cannot be asked, is offered every file.
 
+Some `custom` entries, as gan declares them, change what the page
+does; they are shown as readable rows. Any other entry, or one of
+another shape, is shown as JSON and changes nothing.
+
+| Entry | What the page does |
+| --- | --- |
+| `askUser` | Shows the agent's questions and tells it so (see Questions) |
+| `products` | Offers a product picker (see Products) |
+| `documents` | Refuses a file over `maxFileMb`; the other limits are shown |
+| `languages` | Shown only |
+
 ## Questions
 
-Every run tells the agent that the page shows questions:
-`forwardedProps.askUser` is true. An agent such as gan may then ask
+When the agent declares `custom.askUser`, every run tells it that the
+page shows questions: `forwardedProps.askUser` is true. It may then ask
 with its `ask_user` tool: one to four questions, each with ready
 answers. The run pauses on the call, and the chat shows the questions
 as a form: the answers, as radio buttons or checkboxes for a
@@ -104,8 +115,18 @@ question answered `{"skipped": true}` by gan, and the form shows it
 skipped.
 
 The page only shows the agent's own tool: it does not offer one to the
-agent. An agent without questions ignores the flag; gan declares them
-in `custom.askUser` of its capabilities.
+agent.
+
+## Products
+
+An agent selling several products, as gan does, lists those offered
+to the user in `custom.products`, as NDP names them:
+`[{"code": "mst", "variant": "premium"}]`. The list may differ by
+user, so it follows the headers. The picker above the chat sends the
+product picked with every run as `forwardedProps.product`: one
+variant, `{"code": "mst", "variant": "premium"}`, keeps the agent to
+it; a code alone, `{"code": "mst"}`, to any of its variants. **All
+products** sends nothing. A pick the agent stops offering is dropped.
 
 ## Settings
 
@@ -119,7 +140,7 @@ in `custom.askUser` of its capabilities.
 - CopilotKit cloud features (Intelligence, Threads, Learning) stay
   off: they need a CopilotKit account and send data to their cloud.
 - `.env.example` turns off Next.js and CopilotKit usage telemetry.
-- The devtool always says it shows questions. To see how an agent
-  answers a client that does not, call it without the flag, e.g. with
-  curl.
+- The devtool says it shows questions whenever the agent declares
+  them. To see how an agent answers a client that does not, call it
+  without the flag, e.g. with curl.
 - `npm run typecheck` checks types; `npm run build` checks the build.

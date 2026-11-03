@@ -29,6 +29,7 @@ body {
 }
 
 .connection input,
+.connection select,
 .connection button {
   font: inherit;
   padding: 6px 10px;
@@ -46,6 +47,16 @@ body {
   display: grid;
   gap: 4px;
   margin-top: 8px;
+}
+
+.product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product span {
+  font-weight: 600;
 }
 
 .field span,

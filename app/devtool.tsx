@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   CopilotChat,
@@ -10,6 +10,13 @@ import {
 
 import { type AttachmentPolicy, attachmentPolicy } from "@/lib/capabilities";
 import { useConnection } from "@/lib/connection";
+import {
+  choiceKey,
+  offeredChoice,
+  type Product,
+  productChoices,
+  readCustom,
+} from "@/lib/custom-capabilities";
 import { useAgentCapabilities } from "@/lib/use-agent-capabilities";
 
 import { useAskUser } from "./ask-user";
@@ -18,13 +25,30 @@ import { ConnectionPanel } from "./connection-panel";
 
 type Props = { defaultAgentUrl: string | undefined };
 
-// Sent with every run as forwardedProps: the page shows the questions
-// the agent asks (see ask-user.tsx). An agent without them ignores it.
-const PROPERTIES = { askUser: true };
-
 export function Devtool({ defaultAgentUrl }: Props) {
   const { agentUrl, setAgentUrl, rows, setRows, headers } = useConnection();
   const capabilities = useAgentCapabilities(headers);
+  const declared =
+    capabilities.status === "ready" ? capabilities.capabilities : undefined;
+  const custom = useMemo(() => readCustom(declared), [declared]);
+  // The product picked; kept only while the agent offers it to the
+  // user the headers name.
+  const [picked, setPicked] = useState<string | null>(null);
+  const product = useMemo(
+    () => offeredChoice(picked, custom.products),
+    [picked, custom.products],
+  );
+
+  // Sent with every run as forwardedProps: questions are shown if the
+  // agent asks them (see ask-user.tsx), and the product picked is the
+  // one the agent keeps to.
+  const properties = useMemo(
+    () => ({
+      ...(custom.askUser ? { askUser: true } : {}),
+      ...(product ? { product } : {}),
+    }),
+    [custom.askUser, product],
+  );
 
   // Every request to the runtime carries the agent URL and headers;
   // the Inspector is on in dev builds.
@@ -32,7 +56,7 @@ export function Devtool({ defaultAgentUrl }: Props) {
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
       headers={headers}
-      properties={PROPERTIES}
+      properties={properties}
     >
       <main className="layout">
         <ConnectionPanel
@@ -43,15 +67,44 @@ export function Devtool({ defaultAgentUrl }: Props) {
           onRowsChange={setRows}
         />
         <CapabilitiesPanel state={capabilities} />
-        <Chat
-          attachments={attachmentPolicy(
-            capabilities.status === "ready"
-              ? capabilities.capabilities
-              : undefined,
-          )}
-        />
+        {custom.products && custom.products.length > 0 && (
+          <ProductPicker
+            products={custom.products}
+            picked={product ? choiceKey(product) : null}
+            onPick={setPicked}
+          />
+        )}
+        <Chat attachments={attachmentPolicy(declared, custom.documents)} />
       </main>
     </CopilotKitProvider>
+  );
+}
+
+type PickerProps = {
+  products: Product[];
+  picked: string | null;
+  onPick: (picked: string | null) => void;
+};
+
+/** Pick the product runs keep to, from those the agent offers. */
+function ProductPicker({ products, picked, onPick }: PickerProps) {
+  return (
+    <label className="connection product">
+      <span>Product</span>
+      <select
+        value={picked ?? ""}
+        onChange={(event) => onPick(event.target.value || null)}
+      >
+        <option value="">All products</option>
+        {productChoices(products).map((choice) => (
+          <option key={choiceKey(choice)} value={choiceKey(choice)}>
+            {choice.variant
+              ? `${choice.code} · ${choice.variant}`
+              : `${choice.code}, every variant`}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
