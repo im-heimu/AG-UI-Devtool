@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import {
-  CopilotChat,
-  CopilotKitProvider,
-  useDefaultRenderTool,
-} from "@copilotkit/react-core/v2";
+import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 
 import { type AttachmentPolicy, attachmentPolicy } from "@/lib/capabilities";
 import { useConnection } from "@/lib/connection";
@@ -22,6 +18,7 @@ import { useAgentCapabilities } from "@/lib/use-agent-capabilities";
 import { useAskUser } from "./ask-user";
 import { CapabilitiesPanel } from "./capabilities-panel";
 import { ConnectionPanel } from "./connection-panel";
+import { useToolCalls } from "./tool-files";
 
 type Props = { defaultAgentUrl: string | undefined };
 
@@ -74,7 +71,10 @@ export function Devtool({ defaultAgentUrl }: Props) {
             onPick={setPicked}
           />
         )}
-        <Chat attachments={attachmentPolicy(declared, custom.documents)} />
+        <Chat
+          attachments={attachmentPolicy(declared, custom.documents)}
+          headers={headers}
+        />
       </main>
     </CopilotKitProvider>
   );
@@ -108,10 +108,16 @@ function ProductPicker({ products, picked, onPick }: PickerProps) {
   );
 }
 
-function Chat({ attachments }: { attachments: AttachmentPolicy }) {
+type ChatProps = {
+  attachments: AttachmentPolicy;
+  // Sent with a file's download, as with every run.
+  headers: Record<string, string>;
+};
+
+function Chat({ attachments, headers }: ChatProps) {
   // Show every tool call the agent makes in the chat, with its
-  // arguments, status and result.
-  useDefaultRenderTool();
+  // arguments, status and result, and the files it hands the user.
+  useToolCalls(headers);
   // Questions the agent asks: answered here, the run waits for them.
   useAskUser();
   // CopilotKit drops a rejected file silently; say why instead.
